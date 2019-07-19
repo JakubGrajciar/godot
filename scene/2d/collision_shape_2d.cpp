@@ -57,11 +57,21 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 
 void CollisionShape2D::_notification(int p_what) {
 
+	Object *tmp;
+
 	switch (p_what) {
 
 		case NOTIFICATION_PARENTED: {
 
-			parent = Object::cast_to<CollisionObject2D>(get_parent());
+			/* loop predecessors until CollisionObject2D or root is found */
+			tmp = this;
+			do {
+				tmp = Object::cast_to<Object>(tmp->get_parent());
+				if (!tmp)
+					break;
+				parent = Object::cast_to<CollisionObject2D>(tmp);
+			} while (!parent)
+
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				if (shape.is_valid()) {

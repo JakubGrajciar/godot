@@ -73,10 +73,20 @@ void CollisionShape::_update_in_shape_owner(bool p_xform_only) {
 
 void CollisionShape::_notification(int p_what) {
 
+	Object *tmp;
+
 	switch (p_what) {
 
 		case NOTIFICATION_PARENTED: {
-			parent = Object::cast_to<CollisionObject>(get_parent());
+			/* loop predecessors until CollisionObject or root is found */
+			tmp = this;
+			do {
+				tmp = Object::cast_to<Object>(tmp->get_parent());
+				if (!tmp)
+					break;
+				parent = Object::cast_to<CollisionObject>(tmp);
+			} while (!parent)
+
 			if (parent) {
 				owner_id = parent->create_shape_owner(this);
 				if (shape.is_valid()) {
